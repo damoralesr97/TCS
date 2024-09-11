@@ -24,7 +24,7 @@ public class Account {
     private Integer id;
 
     @Column(name = "ACT_NUMBER", unique = true, nullable = false)
-    private String numberAccount;
+    private String accountNumber;
 
     @Column(name = "ACT_TYPE", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -34,7 +34,7 @@ public class Account {
     @Min(value = 1,message = "El saldo inicial debe ser mayor o igual 1")
     private BigDecimal initialBalance;
 
-    @Column(name = "ACT_STATE")
-    private Boolean state;
+    @Column(name = "ACT_STATUS")
+    private Boolean status;
 
 }
