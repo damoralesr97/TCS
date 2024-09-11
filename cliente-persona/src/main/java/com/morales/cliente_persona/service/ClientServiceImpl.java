@@ -30,7 +30,7 @@ public class ClientServiceImpl implements IClientService {
     @Override
     public List<ClientDTO> findAll() throws TCSException {
         try {
-            List<Client> clientList = this.clientRepository.findAll();
+            List<Client> clientList = this.clientRepository.findByStatusTrue();
             return clientMapper.toClientDtos(clientList);
         } catch (Exception e) {
             throw new TCSException(e.getMessage(), e);
@@ -40,7 +40,7 @@ public class ClientServiceImpl implements IClientService {
     @Override
     public ClientDTO findByDni(String dni) throws TCSException {
         try {
-            Optional<Client> client = clientRepository.findByDni(dni);
+            Optional<Client> client = clientRepository.findByDniAndStatusTrue(dni);
             return clientMapper.toClientDto(client.orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND))));
         } catch (Exception e) {
             throw new TCSException(e.getMessage(), e);
@@ -61,7 +61,7 @@ public class ClientServiceImpl implements IClientService {
     @Override
     public ClientDTO updateByDni(String dni, ClientDTO clientDTO) throws TCSException {
         try{
-            Client client = clientRepository.findByDni(dni).orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND)));
+            Client client = clientRepository.findByDniAndStatusTrue(dni).orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND)));
 
             BeanUtilsBean beanUtils = new NonNullBeanProperties();
             beanUtils.copyProperties(client, clientMapper.toClient(clientDTO));
@@ -75,9 +75,9 @@ public class ClientServiceImpl implements IClientService {
     @Override
     public Boolean deleteByDni(String dni) throws TCSException {
         try {
-            Client client = clientRepository.findByDni(dni).orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND)));
+            Client client = clientRepository.findByDniAndStatusTrue(dni).orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND)));
 
-            client.setState(Boolean.FALSE);
+            client.setStatus(Boolean.FALSE);
             clientRepository.save(client);
 
             return Boolean.TRUE;

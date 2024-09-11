@@ -18,7 +18,7 @@ public interface ClientMapper {
     @Mapping(source = "address",target = "direccion")
     @Mapping(source = "phoneNumber",target = "telefono")
     @Mapping(source = "password",target = "clave")
-    @Mapping(source = "state",target = "estado")
+    @Mapping(source = "status",target = "estado")
     ClientDTO toClientDto(Client client);
     List<ClientDTO> toClientDtos(List<Client> clients);
 
