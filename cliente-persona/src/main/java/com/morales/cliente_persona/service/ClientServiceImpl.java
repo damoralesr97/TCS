@@ -6,6 +6,9 @@ import com.morales.cliente_persona.dto.mapper.ClientMapper;
 import com.morales.cliente_persona.model.Client;
 import com.morales.cliente_persona.repository.ClientRepository;
 import com.morales.cliente_persona.service.interfaces.IClientService;
+import com.morales.cliente_persona.utils.MessageUtil;
+import com.morales.cliente_persona.utils.Messages;
+import com.morales.cliente_persona.utils.exceptions.TCSException;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,56 +26,60 @@ public class ClientServiceImpl implements IClientService {
     private ClientMapper clientMapper;
 
     @Override
-    public List<ClientDTO> findAll() {
+    public List<ClientDTO> findAll() throws TCSException {
         try {
             List<Client> clientList = this.clientRepository.findAll();
             return clientMapper.toClientDtos(clientList);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new TCSException(e.getMessage(), e);
         }
     }
 
     @Override
-    public ClientDTO findByDni(String dni) {
+    public ClientDTO findByDni(String dni) throws TCSException {
         try {
             Optional<Client> client = clientRepository.findByDni(dni);
-            return clientMapper.toClientDto(client.orElseThrow());
+            return clientMapper.toClientDto(client.orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND))));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new TCSException(e.getMessage(), e);
         }
     }
 
     @Override
-    public ClientDTO save(ClientDTO clientDTO) {
+    public ClientDTO save(ClientDTO clientDTO) throws TCSException {
         try {
             return clientMapper.toClientDto(clientRepository.save(clientMapper.toClient(clientDTO)));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new TCSException(e.getMessage(), e);
         }
     }
 
     @Override
-    public ClientDTO updateByDni(String dni, ClientDTO clientDTO) {
+    public ClientDTO updateByDni(String dni, ClientDTO clientDTO) throws TCSException {
         try{
-            Client client = clientRepository.findByDni(dni).orElseThrow();
+            Client client = clientRepository.findByDni(dni).orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND)));
 
             BeanUtilsBean beanUtils = new NonNullBeanProperties();
             beanUtils.copyProperties(client, clientMapper.toClient(clientDTO));
 
             return clientMapper.toClientDto(clientRepository.save(client));
         }catch (Exception e){
-            throw new RuntimeException(e);
+            throw new TCSException(e.getMessage(), e);
         }
     }
 
     @Override
-    public Boolean deleteByDni(String dni) {
-        Client client = clientRepository.findByDni(dni).orElseThrow();
+    public Boolean deleteByDni(String dni) throws TCSException {
+        try {
+            Client client = clientRepository.findByDni(dni).orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND)));
 
-        client.setState(Boolean.FALSE);
-        clientRepository.save(client);
+            client.setState(Boolean.FALSE);
+            clientRepository.save(client);
 
-        return Boolean.TRUE;
+            return Boolean.TRUE;
+        } catch (Exception e) {
+            throw new TCSException(e.getMessage(), e);
+        }
     }
 
 }
