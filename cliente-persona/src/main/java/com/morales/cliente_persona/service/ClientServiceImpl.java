@@ -4,7 +4,7 @@ import com.morales.cliente_persona.config.NonNullBeanProperties;
 import com.morales.cliente_persona.dto.ClientDTO;
 import com.morales.cliente_persona.dto.mapper.ClientMapper;
 import com.morales.cliente_persona.model.Client;
-import com.morales.cliente_persona.repository.ClientRepository;
+import com.morales.cliente_persona.repository.IClientRepository;
 import com.morales.cliente_persona.service.interfaces.IClientService;
 import com.morales.cliente_persona.utils.MessageUtil;
 import com.morales.cliente_persona.utils.Messages;
@@ -22,7 +22,7 @@ import java.util.Optional;
 public class ClientServiceImpl implements IClientService {
 
     @Autowired
-    private ClientRepository clientRepository;
+    private IClientRepository clientRepository;
 
     @Autowired
     private ClientMapper clientMapper;
