@@ -9,8 +9,10 @@ import com.morales.cliente_persona.service.interfaces.IClientService;
 import com.morales.cliente_persona.utils.MessageUtil;
 import com.morales.cliente_persona.utils.Messages;
 import com.morales.cliente_persona.utils.exceptions.TCSException;
+import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,9 +48,11 @@ public class ClientServiceImpl implements IClientService {
     }
 
     @Override
-    public ClientDTO save(ClientDTO clientDTO) throws TCSException {
+    public synchronized ClientDTO save(ClientDTO clientDTO) throws TCSException {
         try {
-            return clientMapper.toClientDto(clientRepository.save(clientMapper.toClient(clientDTO)));
+            return clientMapper.toClientDto(this.clientRepository.save(clientMapper.toClient(clientDTO)));
+        } catch (ConstraintViolationException | DataIntegrityViolationException ev){
+            throw ev;
         } catch (Exception e) {
             throw new TCSException(e.getMessage(), e);
         }
