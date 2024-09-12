@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface IMovementRepository extends JpaRepository<Movement, Integer> {
 
-    List<Movement> findByMovementDateIsBetween(Date startDate, Date endDate);
+    List<Movement> findByAccountClientDniAndMovementDateIsBetween(String dni, Date startDate, Date endDate);
 
 }

@@ -135,9 +135,10 @@ public class MovementServiceImpl implements IMovementService {
     @Override
     public List<ReportDTO> findMoventsByClientDniBetweenDate(String dni, String startDate, String endDate) throws TCSException {
         try {
-            List<Movement> movementList = this.movementRepository.findByMovementDateIsBetween(
-                    DateUtils.convertStringToDate(startDate),
-                    DateUtils.convertStringToDate(endDate)
+            List<Movement> movementList = this.movementRepository.findByAccountClientDniAndMovementDateIsBetween(
+                    dni,
+                    DateUtils.convertStringToDate(startDate, Boolean.TRUE),
+                    DateUtils.convertStringToDate(endDate, Boolean.FALSE)
             );
             return this.reportMapper.toReportDtos(movementList);
         } catch (Exception e) {

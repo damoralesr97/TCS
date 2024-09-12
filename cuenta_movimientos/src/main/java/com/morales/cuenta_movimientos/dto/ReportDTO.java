@@ -18,7 +18,7 @@ import java.util.Date;
 @Builder(toBuilder = true)
 @JsonPropertyOrder({
         "fecha",
-        //"cliente",
+        "cliente",
         "numeroCuenta",
         "tipo",
         "saldoInicial",
@@ -28,11 +28,11 @@ import java.util.Date;
 })
 public class ReportDTO {
 
-    @JsonFormat(pattern="yyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @JsonProperty("Fecha")
     private Date fecha;
-    //@JsonProperty("Cliente")
-    //private String cliente;
+    @JsonProperty("Cliente")
+    private String cliente;
     @JsonProperty("Numero Cuenta")
     private String numeroCuenta;
     @JsonProperty("Tipo")

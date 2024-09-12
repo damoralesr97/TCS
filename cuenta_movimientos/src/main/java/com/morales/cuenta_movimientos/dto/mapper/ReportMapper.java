@@ -11,7 +11,7 @@ import java.util.List;
 public interface ReportMapper {
 
     @Mapping(source = "movementDate", target = "fecha")
-    //@Mapping(source = "account.client.name", target = "cliente")
+    @Mapping(source = "account.clientName", target = "cliente")
     @Mapping(source = "account.accountNumber", target = "numeroCuenta")
     @Mapping(source = "account.typeAccount", target = "tipo")
     @Mapping(source = "account.initialBalance", target = "saldoInicial")
