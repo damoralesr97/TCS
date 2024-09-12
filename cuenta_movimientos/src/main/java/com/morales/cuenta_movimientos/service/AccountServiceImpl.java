@@ -17,9 +17,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class AccountServiceImpl implements IAccountService {
+
+    private final Random random = new Random();
 
     @Autowired
     private IAccountRepository accountRepository;
@@ -52,6 +55,7 @@ public class AccountServiceImpl implements IAccountService {
     @Override
     public AccountDTO save(AccountDTO accountDTO) throws TCSException {
         try {
+            accountDTO.setNumeroCuenta(this.generateUniqueAccountNumber());
             return this.accountMapper.toDTO(this.accountRepository.save(this.accountMapper.toEntity(accountDTO)));
         } catch (ConstraintViolationException | DataIntegrityViolationException ev){
             throw ev;
@@ -90,6 +94,14 @@ public class AccountServiceImpl implements IAccountService {
         } catch (Exception e) {
             throw new TCSException(e.getMessage(), e);
         }
+    }
+
+    private String generateUniqueAccountNumber() {
+        String accountNumber;
+        do {
+            accountNumber = String.valueOf(100000 + random.nextInt(900000));
+        } while (this.accountRepository.existsByAccountNumber(accountNumber));
+        return accountNumber;
     }
 
 }

@@ -14,4 +14,6 @@ public interface IAccountRepository extends JpaRepository<Account, Integer> {
 
     Optional<Account> findByAccountNumberAndStatusTrue(String accountNumber);
 
+    boolean existsByAccountNumber(String accountNumber);
+
 }

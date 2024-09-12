@@ -29,9 +29,8 @@ public class ClientEventsService {
         if (event.getClass().isAssignableFrom(ClientCreatedEvent.class)) {
             ClientCreatedEvent clientCreatedEvent = (ClientCreatedEvent) event;
             AccountDTO accountDTO = AccountDTO.builder()
-                    .numeroCuenta("123456")
-                    .tipoCuenta(AccountTypeEnum.AHORRO)
-                    .saldoInicial(BigDecimal.valueOf(10))
+                    .tipoCuenta(clientCreatedEvent.getData().getTipoCuenta())
+                    .saldoInicial(clientCreatedEvent.getData().getSaldoInicial())
                     .estado(Boolean.TRUE)
                     .clienteIdentificacion(clientCreatedEvent.getData().getIdentificacion())
                     .clienteNombre(clientCreatedEvent.getData().getNombre())
