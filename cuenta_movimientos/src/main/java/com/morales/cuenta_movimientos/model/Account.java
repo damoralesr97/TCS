@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -30,11 +31,14 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private AccountTypeEnum typeAccount;
 
-    @Column(name = "ACT_BALANCE", nullable = false)
+    @Column(name = "ACT_INITIAL_BALANCE", nullable = false)
     @Min(value = 1,message = "El saldo inicial debe ser mayor o igual 1")
     private BigDecimal initialBalance;
 
     @Column(name = "ACT_STATUS")
     private Boolean status;
+
+    @OneToMany(mappedBy = "account", fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<Movement> movements;
 
 }

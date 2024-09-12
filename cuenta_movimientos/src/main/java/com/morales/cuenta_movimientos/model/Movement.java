@@ -36,4 +36,8 @@ public class Movement {
     @Column(name = "MOV_BALANCE", nullable = false)
     private BigDecimal balance;
 
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = Account.class)
+    @JoinColumn(name = "MOV_ACT_ID", referencedColumnName = "ACT_ID", nullable = false)
+    private Account account;
+
 }

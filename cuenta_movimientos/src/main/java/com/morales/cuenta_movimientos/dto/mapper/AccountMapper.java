@@ -20,6 +20,7 @@ public interface AccountMapper {
 
     @InheritInverseConfiguration
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "movements", ignore = true)
     Account toAccount(AccountDTO accountDTO);
 
 }
