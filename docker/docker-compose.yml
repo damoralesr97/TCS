@@ -1,0 +1,102 @@
+version: '3.6'
+volumes:
+  postgres-data:
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+    networks:
+      - my-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - my-network
+
+  srvdb-clientes:
+    image: postgres
+    container_name: srvdb-clientes
+    hostname: srvdb-clientes
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: clientesdb
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./schemaPersonasClientes.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./postgres-data-clientes:/var/lib/postgresql/data
+    ports:
+      - 5435:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "clientesdb"]
+      interval: 10s
+      retries: 5
+    networks:
+      - my-network
+
+  srvdb-cuentas:
+    image: postgres
+    container_name: srvdb-cuentas
+    hostname: srvdb-cuentas
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: cuentasdb
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./schemaCuentasMovimientos.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./postgres-data-cuentas:/var/lib/postgresql/data
+    ports:
+      - 5434:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "cuentasdb"]
+      interval: 10s
+      retries: 5
+    networks:
+      - my-network
+
+  app-cliente-persona:
+    image: damoralesr97/cliente-persona:latest
+    build: ./tcs
+    container_name: app-cliente-persona
+    environment:
+      - tcs.datasource.host=srvdb-clientes:5432
+    depends_on:
+      srvdb-clientes:
+        condition: service_healthy
+    networks:
+      - my-network
+    ports:
+      - 8180:8180
+
+  app-cuenta-movimientos:
+    image: damoralesr97/cuenta-movimientos:latest
+    build: ./tcs
+    container_name: app-cuenta-movimientos  
+    environment:
+      - tcs.datasource.cuenta.host=srvdb-cuentas:5432
+    depends_on:
+      srvdb-cuentas:
+        condition: service_healthy
+    networks:
+      - my-network
+    ports:
+      - 8080:8080
+
+networks:
+  my-network:
+    driver: bridge
