@@ -5,9 +5,6 @@ import com.morales.cliente_persona.dto.ClientRequestDTO;
 import com.morales.cliente_persona.dto.ClientAccountEventDTO;
 import com.morales.cliente_persona.dto.ClientResponseDTO;
 import com.morales.cliente_persona.dto.mapper.ClientMapper;
-import com.morales.cliente_persona.events.ClientCreatedEvent;
-import com.morales.cliente_persona.events.Event;
-import com.morales.cliente_persona.events.EventType;
 import com.morales.cliente_persona.model.Client;
 import com.morales.cliente_persona.repository.IClientRepository;
 import com.morales.cliente_persona.service.interfaces.IClientService;
@@ -17,15 +14,11 @@ import com.morales.cliente_persona.utils.exceptions.TCSException;
 import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class ClientServiceImpl implements IClientService {
@@ -37,10 +30,7 @@ public class ClientServiceImpl implements IClientService {
     private ClientMapper clientMapper;
 
     @Autowired
-    private KafkaTemplate<String, Event<?>> producer;
-
-    @Value("${topic.account.name:clients}")
-    private String topicAccount;
+    private ClientEventService clientEventService;
 
     @Override
     public List<ClientResponseDTO> findAll() throws TCSException {
@@ -76,12 +66,7 @@ public class ClientServiceImpl implements IClientService {
                     .saldoInicial(clientRequestDTO.getSaldoInicial())
                     .build();
 
-            ClientCreatedEvent createdEvent = new ClientCreatedEvent();
-            createdEvent.setData(clientAccountEventDTO);
-            createdEvent.setId(UUID.randomUUID().toString());
-            createdEvent.setType(EventType.CREATED);
-            createdEvent.setDate(new Date());
-            this.producer.send(topicAccount, createdEvent);
+            this.clientEventService.publish(clientAccountEventDTO);
 
             return clientMapper.toResponseDto(client);
         } catch (ConstraintViolationException | DataIntegrityViolationException ev){
