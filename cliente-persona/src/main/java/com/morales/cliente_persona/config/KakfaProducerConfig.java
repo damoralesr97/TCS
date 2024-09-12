@@ -19,7 +19,7 @@ public class KakfaProducerConfig {
     @Bean
     public ProducerFactory<String, Event<?>> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
-        String bootstrapAddress = "localhost:29092";
+        String bootstrapAddress = "kafka:9092";
         configProps.put(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 bootstrapAddress);
