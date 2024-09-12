@@ -5,6 +5,7 @@ import com.morales.cuenta_movimientos.service.interfaces.IAccountService;
 import com.morales.cuenta_movimientos.utils.ResponseHandler;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -49,7 +50,7 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseHandler<Object>> save(@RequestBody() AccountDTO accountDTO){
+    public ResponseEntity<ResponseHandler<Object>> save(@Valid @RequestBody() AccountDTO accountDTO){
         ResponseHandler<Object> responseHandler;
         try{
             responseHandler = ResponseHandler.builder().code(HttpStatus.CREATED.value())

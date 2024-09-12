@@ -31,7 +31,7 @@ public class AccountServiceImpl implements IAccountService {
     public List<AccountDTO> findAll() throws TCSException {
         try {
             List<Account> accountList = this.accountRepository.findByStatusTrue();
-            return accountMapper.toAccountDtos(accountList);
+            return accountMapper.toDTOList(accountList);
         } catch (Exception e) {
             throw new TCSException(e.getMessage(), e);
         }
@@ -41,7 +41,7 @@ public class AccountServiceImpl implements IAccountService {
     public AccountDTO findByAccountNumber(String accountNumber) throws TCSException {
         try{
             Optional<Account> account = this.accountRepository.findByAccountNumberAndStatusTrue(accountNumber);
-            return this.accountMapper.toAccountDto(
+            return this.accountMapper.toDTO(
                     account.orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.ACCOUNT_NOT_FOUND)))
             );
         }catch (Exception e){
@@ -52,7 +52,7 @@ public class AccountServiceImpl implements IAccountService {
     @Override
     public AccountDTO save(AccountDTO accountDTO) throws TCSException {
         try {
-            return this.accountMapper.toAccountDto(this.accountRepository.save(this.accountMapper.toAccount(accountDTO)));
+            return this.accountMapper.toDTO(this.accountRepository.save(this.accountMapper.toEntity(accountDTO)));
         } catch (ConstraintViolationException | DataIntegrityViolationException ev){
             throw ev;
         } catch (Exception e) {
@@ -68,9 +68,9 @@ public class AccountServiceImpl implements IAccountService {
             );
 
             BeanUtilsBean beanUtils = new NonNullBeanProperties();
-            beanUtils.copyProperties(account, this.accountMapper.toAccount(accountDTO));
+            beanUtils.copyProperties(account, this.accountMapper.toEntity(accountDTO));
 
-            return this.accountMapper.toAccountDto(this.accountRepository.save(account));
+            return this.accountMapper.toDTO(this.accountRepository.save(account));
         }catch (Exception e){
             throw new TCSException(e.getMessage(), e);
         }

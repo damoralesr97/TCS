@@ -1,6 +1,7 @@
 package com.morales.cuenta_movimientos.dto;
 
 import com.morales.cuenta_movimientos.utils.enums.AccountTypeEnum;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -28,5 +29,10 @@ public class AccountDTO {
 
     @NotNull(message = "El estado es requerido")
     private Boolean estado;
+
+    @NotNull(message = "La cedula del cliente es requerida")
+    private String clienteIdentificacion;
+
+    private String clienteNombre;
 
 }

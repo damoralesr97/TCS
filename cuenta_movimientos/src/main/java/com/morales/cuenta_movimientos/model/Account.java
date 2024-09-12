@@ -41,4 +41,9 @@ public class Account {
     @OneToMany(mappedBy = "account", fetch = FetchType.EAGER, orphanRemoval = true)
     private List<Movement> movements;
 
+    @Column(nullable = false)
+    private String clientDni;
+
+    private String clientName;
+
 }

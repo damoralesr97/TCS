@@ -4,16 +4,8 @@ import com.morales.cliente_persona.utils.enums.GenreEnum;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder(toBuilder = true)
-public class ClientDTO {
+public class ClientAccountRequestDTO {
 
     @Size(min = 10, max = 10, message = "La cedula debe tener 10 digitos")
     private String identificacion;
@@ -32,7 +24,5 @@ public class ClientDTO {
     private String telefono;
 
     private String clave;
-
-    private Boolean estado;
 
 }

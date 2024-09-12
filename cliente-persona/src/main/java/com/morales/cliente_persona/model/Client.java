@@ -21,7 +21,7 @@ public class Client extends Person {
     @NotNull(message = "La contrasena es requerida")
     private String password;
 
-    @Column(name = "CLI_STATUS")
+    @Column(name = "CLI_STATUS", nullable = false)
     private Boolean status;
 
 }

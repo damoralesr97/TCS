@@ -1,8 +1,13 @@
 package com.morales.cliente_persona.service;
 
 import com.morales.cliente_persona.config.NonNullBeanProperties;
-import com.morales.cliente_persona.dto.ClientDTO;
+import com.morales.cliente_persona.dto.ClientRequestDTO;
+import com.morales.cliente_persona.dto.ClientAccountEventDTO;
+import com.morales.cliente_persona.dto.ClientResponseDTO;
 import com.morales.cliente_persona.dto.mapper.ClientMapper;
+import com.morales.cliente_persona.events.ClientCreatedEvent;
+import com.morales.cliente_persona.events.Event;
+import com.morales.cliente_persona.events.EventType;
 import com.morales.cliente_persona.model.Client;
 import com.morales.cliente_persona.repository.IClientRepository;
 import com.morales.cliente_persona.service.interfaces.IClientService;
@@ -12,11 +17,15 @@ import com.morales.cliente_persona.utils.exceptions.TCSException;
 import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ClientServiceImpl implements IClientService {
@@ -27,30 +36,54 @@ public class ClientServiceImpl implements IClientService {
     @Autowired
     private ClientMapper clientMapper;
 
+    @Autowired
+    private KafkaTemplate<String, Event<?>> producer;
+
+    @Value("${topic.account.name:clients}")
+    private String topicAccount;
+
     @Override
-    public List<ClientDTO> findAll() throws TCSException {
+    public List<ClientResponseDTO> findAll() throws TCSException {
         try {
             List<Client> clientList = this.clientRepository.findByStatusTrue();
-            return clientMapper.toClientDtos(clientList);
+            return clientMapper.toResponseDtoList(clientList);
         } catch (Exception e) {
             throw new TCSException(e.getMessage(), e);
         }
     }
 
     @Override
-    public ClientDTO findByDni(String dni) throws TCSException {
+    public ClientResponseDTO findByDni(String dni) throws TCSException {
         try {
             Optional<Client> client = clientRepository.findByDniAndStatusTrue(dni);
-            return clientMapper.toClientDto(client.orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND))));
+            return clientMapper.toResponseDto(client.orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND))));
         } catch (Exception e) {
             throw new TCSException(e.getMessage(), e);
         }
     }
 
     @Override
-    public synchronized ClientDTO save(ClientDTO clientDTO) throws TCSException {
+    public synchronized ClientResponseDTO save(ClientRequestDTO clientRequestDTO) throws TCSException {
         try {
-            return clientMapper.toClientDto(this.clientRepository.save(clientMapper.toClient(clientDTO)));
+            Client clienteSave = clientMapper.toEntity(clientRequestDTO);
+            clienteSave.setStatus(Boolean.TRUE);
+            Client client = this.clientRepository.save(clienteSave);
+
+            ClientAccountEventDTO clientAccountEventDTO = ClientAccountEventDTO.builder()
+                    .identificacion(client.getDni())
+                    .nombre(client.getName())
+                    .tipoCuenta(clientRequestDTO.getTipoCuenta())
+                    .saldoInicial(clientRequestDTO.getSaldoInicial())
+                    .build();
+
+            ClientCreatedEvent createdEvent = new ClientCreatedEvent();
+            createdEvent.setData(clientAccountEventDTO);
+            createdEvent.setId(UUID.randomUUID().toString());
+            createdEvent.setType(EventType.CREATED);
+            createdEvent.setDate(new Date());
+            this.producer.send(topicAccount, createdEvent);
+
+            return clientMapper.toResponseDto(client);
         } catch (ConstraintViolationException | DataIntegrityViolationException ev){
             throw ev;
         } catch (Exception e) {
@@ -59,14 +92,14 @@ public class ClientServiceImpl implements IClientService {
     }
 
     @Override
-    public ClientDTO updateByDni(String dni, ClientDTO clientDTO) throws TCSException {
+    public ClientResponseDTO updateByDni(String dni, ClientRequestDTO clientRequestDTO) throws TCSException {
         try{
             Client client = clientRepository.findByDniAndStatusTrue(dni).orElseThrow(() -> new TCSException(MessageUtil.getMessage(Messages.USER_NOT_FOUND)));
 
             BeanUtilsBean beanUtils = new NonNullBeanProperties();
-            beanUtils.copyProperties(client, clientMapper.toClient(clientDTO));
+            beanUtils.copyProperties(client, clientMapper.toEntity(clientRequestDTO));
 
-            return clientMapper.toClientDto(clientRepository.save(client));
+            return clientMapper.toResponseDto(clientRepository.save(client));
         }catch (Exception e){
             throw new TCSException(e.getMessage(), e);
         }

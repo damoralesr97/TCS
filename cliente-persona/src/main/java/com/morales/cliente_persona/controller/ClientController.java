@@ -1,10 +1,12 @@
 package com.morales.cliente_persona.controller;
 
-import com.morales.cliente_persona.dto.ClientDTO;
+import com.morales.cliente_persona.dto.ClientRequestDTO;
+import com.morales.cliente_persona.dto.ClientResponseDTO;
 import com.morales.cliente_persona.service.interfaces.IClientService;
 import com.morales.cliente_persona.utils.ResponseHandler;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -21,14 +23,14 @@ public class ClientController {
     private IClientService clientService;
 
     @GetMapping
-    public ResponseEntity<ResponseHandler<List<ClientDTO>>> findAll() {
-        ResponseHandler<List<ClientDTO>> responseHandler;
+    public ResponseEntity<ResponseHandler<List<ClientResponseDTO>>> findAll() {
+        ResponseHandler<List<ClientResponseDTO>> responseHandler;
         try {
-            responseHandler = ResponseHandler.<List<ClientDTO>>builder().code(HttpStatus.OK.value())
+            responseHandler = ResponseHandler.<List<ClientResponseDTO>>builder().code(HttpStatus.OK.value())
                     .value(this.clientService.findAll()).build();
             return new ResponseEntity<>(responseHandler, HttpStatus.OK);
         } catch (Exception e) {
-            responseHandler = ResponseHandler.<List<ClientDTO>>builder().code(HttpStatus.BAD_REQUEST.value())
+            responseHandler = ResponseHandler.<List<ClientResponseDTO>>builder().code(HttpStatus.BAD_REQUEST.value())
                     .value(null).build();
             return new ResponseEntity<>(responseHandler, HttpStatus.BAD_REQUEST);
         }
@@ -49,11 +51,11 @@ public class ClientController {
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseHandler<Object>> save(@RequestBody() ClientDTO clientDTO) {
+    public ResponseEntity<ResponseHandler<Object>> save(@Valid @RequestBody() ClientRequestDTO clientRequestDTO) {
         ResponseHandler<Object> responseHandler;
         try{
             responseHandler = ResponseHandler.builder().code(HttpStatus.CREATED.value())
-                    .value(this.clientService.save(clientDTO)).build();
+                    .value(this.clientService.save(clientRequestDTO)).build();
             return new ResponseEntity<>(responseHandler, HttpStatus.CREATED);
         } catch (ConstraintViolationException ev){
             List<String> messages = ev.getConstraintViolations()
@@ -81,11 +83,11 @@ public class ClientController {
     }
 
     @PatchMapping("/{dni}")
-    public ResponseEntity<ResponseHandler<Object>> updateByDni(@PathVariable("dni") String dni, @RequestBody() ClientDTO clientDTO) {
+    public ResponseEntity<ResponseHandler<Object>> updateByDni(@PathVariable("dni") String dni, @RequestBody() ClientRequestDTO clientRequestDTO) {
         ResponseHandler<Object> responseHandler;
         try{
             responseHandler = ResponseHandler.builder().code(HttpStatus.CREATED.value())
-                    .value(this.clientService.updateByDni(dni, clientDTO)).build();
+                    .value(this.clientService.updateByDni(dni, clientRequestDTO)).build();
             return new ResponseEntity<>(responseHandler, HttpStatus.CREATED);
         } catch (Exception e){
             responseHandler = ResponseHandler.builder().code(HttpStatus.BAD_REQUEST.value())
