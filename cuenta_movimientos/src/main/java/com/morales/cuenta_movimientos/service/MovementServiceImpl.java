@@ -3,12 +3,15 @@ package com.morales.cuenta_movimientos.service;
 import com.morales.cuenta_movimientos.config.NonNullBeanProperties;
 import com.morales.cuenta_movimientos.dto.MovementDTO;
 import com.morales.cuenta_movimientos.dto.MovementRequestDTO;
+import com.morales.cuenta_movimientos.dto.ReportDTO;
 import com.morales.cuenta_movimientos.dto.mapper.MovementMapper;
+import com.morales.cuenta_movimientos.dto.mapper.ReportMapper;
 import com.morales.cuenta_movimientos.model.Account;
 import com.morales.cuenta_movimientos.model.Movement;
 import com.morales.cuenta_movimientos.repository.IAccountRepository;
 import com.morales.cuenta_movimientos.repository.IMovementRepository;
 import com.morales.cuenta_movimientos.service.interfaces.IMovementService;
+import com.morales.cuenta_movimientos.utils.DateUtils;
 import com.morales.cuenta_movimientos.utils.MessageUtil;
 import com.morales.cuenta_movimientos.utils.Messages;
 import com.morales.cuenta_movimientos.utils.enums.MovementTypeEnum;
@@ -39,6 +42,9 @@ public class MovementServiceImpl implements IMovementService {
     @Autowired
     private MovementMapper movementMapper;
 
+    @Autowired
+    private ReportMapper reportMapper;
+
     @Override
     public List<MovementDTO> findAll() throws TCSException {
         try {
@@ -66,7 +72,7 @@ public class MovementServiceImpl implements IMovementService {
         try {
             Account account = this.validateAccount(request.getNumeroCuenta());
 
-            BigDecimal balance = BigDecimal.ZERO;
+            BigDecimal balance;
 
             if (CollectionUtils.isEmpty(account.getMovements())) {
                 balance = account.getInitialBalance();
@@ -79,9 +85,8 @@ public class MovementServiceImpl implements IMovementService {
                 movementType = MovementTypeEnum.DEPOSITO;
             } else if (request.getValor().signum() < 0) {
                 movementType = MovementTypeEnum.RETIRO;
-                if (request.getValor().abs().compareTo(balance) > 0) {
+                if (request.getValor().abs().compareTo(balance) > 0)
                     throw new TCSException(MessageUtil.getMessage(Messages.INSUFFICIENT_BALANCE));
-                }
             } else {
                 throw new TCSException(MessageUtil.getMessage(Messages.MOVEMENT_ZERO));
             }
@@ -122,6 +127,19 @@ public class MovementServiceImpl implements IMovementService {
         try {
             this.movementRepository.deleteById(id);
             return Boolean.TRUE;
+        } catch (Exception e) {
+            throw new TCSException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<ReportDTO> findMoventsByClientDniBetweenDate(String dni, String startDate, String endDate) throws TCSException {
+        try {
+            List<Movement> movementList = this.movementRepository.findByMovementDateIsBetween(
+                    DateUtils.convertStringToDate(startDate),
+                    DateUtils.convertStringToDate(endDate)
+            );
+            return this.reportMapper.toReportDtos(movementList);
         } catch (Exception e) {
             throw new TCSException(e.getMessage(), e);
         }

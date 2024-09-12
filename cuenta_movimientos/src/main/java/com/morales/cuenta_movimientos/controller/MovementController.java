@@ -3,6 +3,8 @@ package com.morales.cuenta_movimientos.controller;
 import com.morales.cuenta_movimientos.dto.MovementDTO;
 import com.morales.cuenta_movimientos.dto.MovementRequestDTO;
 import com.morales.cuenta_movimientos.service.interfaces.IMovementService;
+import com.morales.cuenta_movimientos.utils.MessageUtil;
+import com.morales.cuenta_movimientos.utils.Messages;
 import com.morales.cuenta_movimientos.utils.ResponseHandler;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -56,24 +58,6 @@ public class MovementController {
             responseHandler = ResponseHandler.builder().code(HttpStatus.CREATED.value())
                     .value(this.movementService.save(request)).build();
             return new ResponseEntity<>(responseHandler, HttpStatus.CREATED);
-        } catch (ConstraintViolationException ev){
-            List<String> messages = ev.getConstraintViolations()
-                    .stream()
-                    .map(ConstraintViolation::getMessage)
-                    .toList();
-            responseHandler = ResponseHandler.builder().code(HttpStatus.BAD_REQUEST.value())
-                    .value(messages).build();
-            return new ResponseEntity<>(responseHandler, HttpStatus.BAD_REQUEST);
-        } catch (DataIntegrityViolationException ev){
-            String message;
-            if (ev.getMessage().contains("unique constraint")) {
-                message = "El movimiento ya existe. Por favor, verifica los datos.";
-            } else {
-                message = "Ocurrió un error al procesar la solicitud. Por favor, verifica los datos e inténtalo de nuevo.";
-            }
-            responseHandler = ResponseHandler.builder().code(HttpStatus.BAD_REQUEST.value())
-                    .value(message).build();
-            return new ResponseEntity<>(responseHandler, HttpStatus.BAD_REQUEST);
         } catch (Exception e){
             responseHandler = ResponseHandler.builder().code(HttpStatus.BAD_REQUEST.value())
                     .value(e.getMessage()).build();

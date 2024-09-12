@@ -7,5 +7,6 @@ public class Messages {
     public static final String MOVEMENT_ZERO = "error.movement.zero";
     public static final String REQUIRED_ACCOUNT = "required.field.account";
     public static final String INSUFFICIENT_BALANCE = "error.insufficient.balance";
+    public static final String DATE_FORMAT = "util.date.format";
 
 }
